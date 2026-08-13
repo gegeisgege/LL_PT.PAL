@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\LessonCategory;
 use App\Models\Tag;
 use Livewire\Component;
+use App\Models\AuditLog;
 
 class Create extends Component
 {
@@ -62,6 +63,8 @@ class Create extends Component
         ]);
 
         $lesson->tags()->sync($this->selectedTags);
+
+        AuditLog::record('LESSON_CREATED', $lesson);
 
         session()->flash('message', 'Lesson saved as draft.');
 

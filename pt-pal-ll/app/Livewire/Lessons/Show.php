@@ -3,9 +3,11 @@
 namespace App\Livewire\Lessons;
 
 use App\Models\Lesson;
+use App\Models\AuditLog;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Computed;
+use Illuminate\Support\Facades\RateLimiter;
 
 class Show extends Component
 {
@@ -50,20 +52,29 @@ class Show extends Component
 
     public $newComment = '';
 
-public function addComment()
-{
-    $this->validate([
-        'newComment' => 'required|string|max:2000',
-    ]);
+    public function addComment()
+    {
+        $key = 'comment:' . auth()->id();
 
-    $this->lesson->comments()->create([
-        'user_id' => auth()->id(),
-        'body' => $this->newComment,
-    ]);
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $this->addError('newComment', 'You are commenting too quickly. Please wait a moment.');
+            return;
+        }
 
-    $this->newComment = '';
-    $this->lesson->refresh()->load('comments.user');
-}
+        RateLimiter::hit($key, 60); // 5 comments per 60 seconds
+
+        $this->validate([
+            'newComment' => 'required|string|max:2000',
+        ]);
+
+        $this->lesson->comments()->create([
+            'user_id' => auth()->id(),
+            'body' => $this->newComment,
+        ]);
+
+        $this->newComment = '';
+        $this->lesson->refresh()->load('comments.user');
+    }
 
     public function deleteComment($commentId)
     {
@@ -77,7 +88,7 @@ public function addComment()
         $this->lesson->refresh()->load('comments.user');
     }
 
-        public function toggleBookmark()
+    public function toggleBookmark()
     {
         $user = auth()->user();
 
@@ -98,7 +109,7 @@ public function addComment()
 
         $storedPath = $this->newAttachment->store('lessons/' . $this->lesson->id, 'local');
 
-        $this->lesson->attachments()->create([
+        $attachment = $this->lesson->attachments()->create([
             'uploaded_by' => auth()->id(),
             'original_filename' => $this->newAttachment->getClientOriginalName(),
             'stored_filename' => basename($storedPath),
@@ -106,6 +117,8 @@ public function addComment()
             'mime_type' => $this->newAttachment->getMimeType(),
             'file_size' => $this->newAttachment->getSize(),
         ]);
+
+        AuditLog::record('ATTACHMENT_UPLOADED', $attachment);
 
         $this->newAttachment = null;
         $this->lesson->refresh()->load('attachments');
@@ -127,6 +140,8 @@ public function addComment()
             'published_at' => now(),
         ]);
 
+        AuditLog::record('LESSON_APPROVED', $this->lesson);
+
         session()->flash('message', 'Lesson approved and published.');
     }
 
@@ -135,6 +150,8 @@ public function addComment()
         $this->authorize('return', $this->lesson);
 
         $this->lesson->update(['status' => 'returned']);
+
+        AuditLog::record('LESSON_REJECTED', $this->lesson);
 
         session()->flash('message', 'Lesson returned to author.');
     }

@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\LessonCategory;
 use App\Models\Tag;
 use Livewire\Component;
+use App\Models\AuditLog;
 
 class Edit extends Component
 {
@@ -65,6 +66,11 @@ class Edit extends Component
 
         $project = Project::findOrFail($this->project_id);
 
+        $this->lesson->tags()->sync($this->selectedTags);
+
+        AuditLog::record('LESSON_UPDATED', $this->lesson);
+        session()->flash('message', 'Lesson updated.');
+
         $this->lesson->update([
             'project_id' => $project->id,
             'department_id' => $project->department_id,
@@ -91,6 +97,8 @@ class Edit extends Component
         $this->authorize('submit', $this->lesson);
 
         $this->lesson->update(['status' => 'submitted']);
+
+        AuditLog::record('LESSON_SUBMITTED', $this->lesson);
 
         session()->flash('message', 'Lesson submitted for review.');
 

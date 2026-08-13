@@ -44,7 +44,9 @@ Route::middleware(['auth'])->group(function () {
 
 use App\Livewire\Lessons\Show as LessonShow;
 
-Route::get('/lessons/{lesson}', LessonShow::class)->name('lessons.show');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/lessons/{lesson}', LessonShow::class)->name('lessons.show');
+});
 
 /**
 * Lessons/Edit
@@ -52,7 +54,9 @@ Route::get('/lessons/{lesson}', LessonShow::class)->name('lessons.show');
 
 use App\Livewire\Lessons\Edit as LessonEdit;
 
-Route::get('/lessons/{lesson}/edit', LessonEdit::class)->name('lessons.edit');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/lessons/{lesson}/edit', LessonEdit::class)->name('lessons.edit');
+});
 
 /**
 * HTTP/AttachmentController
@@ -60,7 +64,7 @@ Route::get('/lessons/{lesson}/edit', LessonEdit::class)->name('lessons.edit');
 
 use App\Http\Controllers\AttachmentController;
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'throttle:30,1'])->group(function () {
     Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
 });
 
@@ -82,4 +86,56 @@ use App\Livewire\Tags\Show as TagShow;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/tags/{tag}', TagShow::class)->name('tags.show');
+});
+
+/**
+* Review/Index
+*/
+
+use App\Livewire\Review\Index as ReviewIndex;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/review', ReviewIndex::class)->name('review.index');
+});
+
+/**
+* MyContributions
+*/
+
+use App\Livewire\Lessons\MyContributions;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/my-lessons', MyContributions::class)->name('lessons.mine');
+});
+
+/**
+* Departments
+*/
+
+use App\Livewire\Admin\Departments as AdminDepartments;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/departments', AdminDepartments::class)->name('admin.departments');
+});
+
+/**
+* Projects
+*/
+
+use App\Livewire\Admin\Projects as AdminProjects;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/projects', AdminProjects::class)->name('admin.projects');
+});
+
+/**
+* Tags and categories
+*/
+
+use App\Livewire\Admin\Categories as AdminCategories;
+use App\Livewire\Admin\Tags as AdminTags;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/categories', AdminCategories::class)->name('admin.categories');
+    Route::get('/admin/tags', AdminTags::class)->name('admin.tags');
 });

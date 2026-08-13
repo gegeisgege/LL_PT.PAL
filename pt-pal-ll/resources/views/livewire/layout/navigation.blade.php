@@ -43,6 +43,11 @@ new class extends Component
                 class="block px-3 py-2 rounded text-sm {{ request()->routeIs('lessons.create') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
                 New Lesson
             </a>
+
+            <a href="{{ route('lessons.mine') }}" wire:navigate
+                class="block px-3 py-2 rounded text-sm {{ request()->routeIs('lessons.mine') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
+                My Contributions
+            </a>
         </div>
 
         <!-- User / logout -->
@@ -55,6 +60,37 @@ new class extends Component
             <a href="{{ route('bookmarks.index') }}" wire:navigate
             class="block px-3 py-2 rounded text-sm {{ request()->routeIs('bookmarks.index') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
             Bookmarks
+            </a>
+
+            @if (auth()->user()->role === 'reviewer')
+                <a href="{{ route('review.index') }}" wire:navigate
+                    class="block px-3 py-2 rounded text-sm {{ request()->routeIs('review.index') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
+                    Review Queue
+                </a>
+            @endif
+
+            @if (auth()->user()->role === 'admin')
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <div class="px-3 text-xs font-mono uppercase tracking-widest text-white/40 mb-1">Admin</div>
+                    <a href="{{ route('admin.departments') }}" wire:navigate
+                        class="block px-3 py-2 rounded text-sm {{ request()->routeIs('admin.departments') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
+                        Departments
+                    </a>
+                </div>
+            @endif
+
+            <a href="{{ route('admin.projects') }}" wire:navigate
+                class="block px-3 py-2 rounded text-sm {{ request()->routeIs('admin.projects') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
+                Projects
+            </a>
+
+            <a href="{{ route('admin.categories') }}" wire:navigate
+                class="block px-3 py-2 rounded text-sm {{ request()->routeIs('admin.categories') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
+                Categories
+            </a>
+            <a href="{{ route('admin.tags') }}" wire:navigate
+                class="block px-3 py-2 rounded text-sm {{ request()->routeIs('admin.tags') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
+                Tags
             </a>
 
             <button wire:click="logout" class="w-full text-left px-3 py-2 rounded text-sm text-white/70 hover:bg-white/5 hover:text-white">
